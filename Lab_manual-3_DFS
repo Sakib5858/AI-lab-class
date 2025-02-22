@@ -1,0 +1,145 @@
+package another;
+
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
+
+public class DFS_2D {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter the grid size N (NxN): ");
+        int N = scanner.nextInt();
+
+        System.out.println("Enter starting point (x y): ");
+        int startX = scanner.nextInt();
+        int startY = scanner.nextInt();
+
+        System.out.println("Enter goal point (x y): ");
+        int goalX = scanner.nextInt();
+        int goalY = scanner.nextInt();
+
+        int[][] grid = generateGrid(N, startX, startY, goalX, goalY);
+
+        System.out.println("Generated Grid with obstacles (1 = Path, 0 = Obstacle): ");
+        printGrid(grid);
+
+        DFS d = new DFS(grid, startX, startY, goalX, goalY);
+    }
+
+    private static int[][] generateGrid(int N, int startX, int startY, int goalX, int goalY) {
+        int[][] grid = new int[N][N];
+        Random rand = new Random();
+
+        for (int i = 0; i < N; i++) {
+            Arrays.fill(grid[i], 1);
+        }
+
+        System.out.print("Enter the number of obstacles: ");
+        Scanner sc = new Scanner(System.in);
+        int numObstacles = sc.nextInt();
+
+        for (int j = 0; j < numObstacles; ) {
+            int a = rand.nextInt(N);
+            int b = rand.nextInt(N);
+
+            if (grid[a][b] != 0 && !(a == startX && b == startY) && !(a == goalX && b == goalY)) {
+                grid[a][b] = 0;
+                j++;
+            }
+        }
+
+        return grid;
+    }
+
+    private static void printGrid(int[][] grid) {
+        for (int[] row : grid) {
+            for (int cell : row) {
+                System.out.print(cell + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+
+
+
+
+package another;
+
+
+
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
+
+class node {
+    int x, y;
+    int depth;
+
+    node(int a, int b, int z) {
+        x = a;
+        y = b;
+        depth = z;
+    }
+}
+
+class DFS {
+    int directions = 4;
+    int[] x_move = {1, -1, 0, 0};
+    int[] y_move = {0, 0, 1, -1};
+    int N;
+    boolean found = false;
+    node source, goal;
+
+    DFS(int[][] grid, int startX, int startY, int goalX, int goalY) {
+        N = grid.length;
+        source = new node(startX, startY, 0); // init source
+        goal = new node(goalX, goalY, 999999); // init goal
+        StDFS(grid, source);
+
+        if (found) {
+            System.out.println("Goal found");
+            System.out.println("Number of moves required = " + goal.depth);
+        } else {
+            System.out.println("Goal can not be reached from starting block");
+        }
+    }
+
+    void printDirection(int m, int x, int y) {
+        if (m == 0) {
+            System.out.println("Moving Down (" + x + ", " + y + ")");
+        } else if (m == 1) {
+            System.out.println("Moving Up (" + x + ", " + y + ")");
+        } else if (m == 2) {
+            System.out.println("Moving Right (" + x + ", " + y + ")");
+        } else {
+            System.out.println("Moving Left (" + x + ", " + y + ")");
+        }
+    }
+
+    void StDFS(int[][] graph, node u) {
+        graph[u.x][u.y] = 0;
+        for (int j = 0; j < directions; j++) { // calculating up, down, left and right directions
+            int v_x = u.x + x_move[j];
+            int v_y = u.y + y_move[j]; // check the boundary conditions
+
+            if ((v_x < N && v_x >= 0) && (v_y < N && v_y >= 0) && graph[v_x][v_y] == 1) {
+                int v_depth = u.depth + 1;
+                printDirection(j, v_x, v_y);
+                if (v_x == goal.x && v_y == goal.y) { // goal check
+                    found = true;
+                    goal.depth = v_depth;
+                    return;
+                }
+
+                node child = new node(v_x, v_y, v_depth);
+                StDFS(graph, child);
+            }
+            if (found) {
+                return;
+            }
+        }
+    }
+}
+
