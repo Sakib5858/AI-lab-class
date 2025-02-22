@@ -1,0 +1,135 @@
+package another;
+
+import java.util.*;
+
+public class RobotBFS {
+    // Directions for BFS: Down, Up, Right, Left
+    static int[] x_move = {1, -1, 0, 0};
+    static int[] y_move = {0, 0, 1, -1};
+    static String[] directionNames = {"Down", "Up", "Right", "Left"};
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter the grid size N (NxN): ");
+        int N = scanner.nextInt();
+
+        System.out.println("Enter starting point (x y): ");
+        int startX = scanner.nextInt();
+        int startY = scanner.nextInt();
+
+        System.out.println("Enter goal point (x y): ");
+        int goalX = scanner.nextInt();
+        int goalY = scanner.nextInt();
+
+        int[][] grid = generateGrid(N, startX, startY, goalX, goalY);
+
+        System.out.println("Generated Grid with obstacles (1 = Path, 0 = Obstacle): ");
+        printGrid(grid);
+
+        bfs(grid, startX, startY, goalX, goalY);
+    }
+
+    private static int[][] generateGrid(int N, int startX, int startY, int goalX, int goalY) {
+        int[][] grid = new int[N][N];
+        Random rand = new Random();
+
+        for (int i = 0; i < N; i++) {
+            Arrays.fill(grid[i], 1);
+        }
+
+        System.out.print("Enter the number of obstacles: ");
+        Scanner sc = new Scanner(System.in);
+        int numObstacles = sc.nextInt();
+
+        for (int j = 0; j < numObstacles; ) {
+            int a = rand.nextInt(N);
+            int b = rand.nextInt(N);
+
+
+            if (grid[a][b] != 0 && !(a == startX && b == startY) && !(a == goalX && b == goalY)) {
+                grid[a][b] = 0;
+                j++;
+            }
+        }
+
+        return grid;
+    }
+
+    private static void printGrid(int[][] grid) {
+        for (int[] row : grid) {
+            for (int cell : row) {
+                System.out.print(cell + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    private static void bfs(int[][] grid, int startX, int startY, int goalX, int goalY) {
+        int N = grid.length;
+        boolean[][] visited = new boolean[N][N];
+        Queue<Node> queue = new LinkedList<>();
+
+        queue.add(new Node(startX, startY, "Start", null));
+        visited[startX][startY] = true;
+
+        Node goalNode = null;
+
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+
+            if (current.x == goalX && current.y == goalY) {
+                goalNode = current;
+                break;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                int newX = current.x + x_move[i];
+                int newY = current.y + y_move[i];
+
+                if (newX >= 0 && newX < N && newY >= 0 && newY < N && grid[newX][newY] == 1 && !visited[newX][newY]) {
+                    visited[newX][newY] = true;
+                    String direction = directionNames[i];
+                    queue.add(new Node(newX, newY, direction, current));
+                }
+            }
+        }
+
+        if (goalNode != null) {
+            printPath(goalNode);
+        } else {
+            System.out.println("No path exists to the goal.");
+        }
+    }
+
+    private static void printPath(Node goalNode) {
+        List<String> path = new ArrayList<>();
+        Node current = goalNode;
+
+        while (current.parent != null) {
+            path.add("Moving " + current.moveDirection + " -> (" + current.x + ", " + current.y + ")");
+            current = current.parent;
+        }
+
+        Collections.reverse(path);
+
+
+        System.out.println("Path to Goal:");
+        for (String step : path) {
+            System.out.println(step);
+        }
+    }
+
+    static class Node {
+        int x, y;
+        String moveDirection;
+        Node parent;
+
+        Node(int x, int y, String moveDirection, Node parent) {
+            this.x = x;
+            this.y = y;
+            this.moveDirection = moveDirection;
+            this.parent = parent;
+        }
+    }
+}
